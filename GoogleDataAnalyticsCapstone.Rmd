@@ -1,0 +1,921 @@
+# INTRODUCTION TO THE ASSIGNMENT
+
+This document represents the culmination of the comprehensive skills and knowledge I've acquired through the Data Analytics Professional Certificate from Google. It embodies the essence of the capstone project, which integrates the entire spectrum of analytical techniques and methodologies encountered during the course into a coherent case study analysis. The focal point of this analysis is the 6 Phase Analysis methodology—Ask, Prepare, Process, Analyze, Share, Act—that has been the backbone of this analytics program.
+
+Herein lies my analytical exploration of *MetriCycle*, a hypothetical bike-share entity modeled after Divvy, the real-life bike-share initiative in Chicago.
+
+## **Scenario Overview**
+
+As a budding data analyst in the marketing department at MetriCycle, our mission is grounded in the sprawling urban landscape of Chicago. Our marketing director is convinced that the path to sustained growth lies in the transition of casual riders to annual members. It is our mandate to discern the usage patterns that distinguish these two rider types. The insights gleaned will spearhead our marketing strategy, tailored to encourage casual riders to become annual subscribers. The proposal must withstand the scrutiny of MetriCycle's detail-centric executive team, necessitating data-driven insights and professional visualizations to support our recommendations.
+
+### **Key Personnel and Teams**
+
+-   **Jamie Tannenbaum**: The marketing director and my direct superior. Tannenbaum's role encompasses crafting and executing promotional strategies to bolster the bike-share program through various outreach channels.
+
+-   **MetriCycle Marketing Analytics Team**: This group of savvy data analysts is the brain behind gathering, scrutinizing, and reporting data that influences MetriCycle's marketing strategies. As the newest addition to this team, I am eager to contribute to MetriCycle's vision and strategic objectives by leveraging my analytical acumen.
+
+-   **MetriCycle Executive Team**: Renowned for their meticulous nature, this team's approval is paramount for greenlighting the proposed marketing initiatives.
+
+### **About MetriCycle**
+
+MetriCycle hit the ground pedaling in 2016 with a robust bike-share service. The fleet has since expanded to 5,824 bicycles, all GPS-enabled and dockable at any of the 692 stations throughout Chicago. This flexibility in docking ensures that bikes are accessible at any station, at any time.
+
+Historically, MetriCycle's marketing has been about creating broad awareness and appealing to a diverse consumer base. This was partially achieved by the versatility of pricing options, including single-ride passes, full-day passes, and annual memberships. Customers opting for short-term passes are our casual riders, while those with annual memberships are our committed MetriCycle members.
+
+## **Ask Phase**
+
+#### Business Task Statement
+
+The primary objective of this analysis is to discern the behavioral patterns differentiating annual members and casual riders of Cyclistic bikes. By comprehensively understanding these distinct usage patterns, we aim to provide actionable insights that could support Cyclistic's strategic marketing efforts. These insights will be pivotal in crafting targeted initiatives to convert casual riders into annual members, thereby bolstering revenue and fostering sustained user engagement.
+
+#### Data Sources
+
+The analysis will be conducted using historical bike usage data from Cyclistic, which includes details on ride duration, start and end stations, bike types, and user types (members or casual riders). The datasets span an entire calendar year, providing a robust sample for identifying trends and behaviors.
+
+#### Data Cleaning and Manipulation
+
+The raw data will undergo rigorous cleaning steps, including:
+
+-   Removal of any erroneous entries or outliers that may skew the results.
+
+-   Ensuring consistency in data formats, especially for date-time fields.
+
+-   Filling in or excluding missing values after assessing their impact on the analysis.
+
+-   Creating new variables for more in-depth insights, such as ride duration, day of the week, and peak usage times.
+
+#### Analysis Summary
+
+The analysis will focus on several aspects:
+
+-   Comparison of ride frequency, duration, and distances between annual members and casual riders.
+
+-   Assessment of peak usage times and preferred stations for both user types.
+
+-   Evaluation of ride patterns across different days of the week and seasons.
+
+#### Visualizations and Key Findings
+
+Visual aids, including bar graphs, line charts, and heatmaps, will be utilized to illustrate the differences in usage patterns between the two groups. Key findings will be highlighted to draw attention to the most significant behavioral trends.
+
+#### Recommendations
+
+Based on the analysis, top recommendations will be proposed to encourage casual riders to convert into annual members. These will focus on marketing strategies, potential incentives, and targeted communication channels.
+
+## **Prepare Phase: Data Preparation and Exploration**
+
+For the "Prepare" phase of our data analysis, the following steps were undertaken to ensure our dataset was primed for a thorough examination:
+
+#### Data Compilation
+
+We obtained Cyclistic’s historical trip data, which encompasses a wide array of trip information spanning from December 2022 to November 2023. Each month's data was meticulously downloaded and stored within a secure, organized directory for easy access and analysis.
+
+#### Data Organization
+
+Upon inspection, the datasets were found to be uniformly structured across all files. Each file contained detailed records of trips, including but not limited to start times, end times, station names, latitude and longitude coordinates, and user types (casual or member).
+
+#### Data Integrity Check
+
+To ensure the accuracy and reliability of our data, we conducted integrity checks:
+
+-   Confirmed the absence of personal identifiers, aligning with privacy and security standards.
+
+-   Examined the datasets for completeness and consistency, verifying that there were no significant gaps in the data collection that could introduce bias.
+
+-   Evaluated the data types and formats to ensure consistency across all datasets.
+
+-   Checked for duplicates and anomalies that might skew our analysis, such as rides with impossible durations.
+
+#### Data Cleaning
+
+The data was cleaned with the following steps:
+
+-   Standardized the format of date and time across all datasets to ensure seamless integration.
+
+-   Removed any trips that had a duration of less than 60 seconds, assuming these to be false starts or immediate cancellations.
+
+-   Excluded any trips with missing start or end station information, as these data points are crucial for our analysis.
+
+-   Filtered out any records with location coordinates falling outside the service area of Cyclistic to maintain the focus on relevant geographical zones.
+
+#### Data Credibility
+
+The source of the data, Motivate International Inc., is a respected provider in the bike-sharing industry. This bolsters the credibility of our data. Furthermore, since the datasets span an entire year, they provide a comprehensive view of the riding patterns without seasonal bias.
+
+#### Addressing Licensing and Accessibility
+
+The data was procured under a license that permits its use for analysis. Accessibility was not an issue as the data is public, and no restrictions were violated in its procurement or use.
+
+#### Data Readiness
+
+With our datasets now cleaned and verified for integrity, we are confident in their quality and readiness for the "Process" phase. The datasets are now well-prepared to provide insights into how annual members and casual riders use Cyclistic bikes differently.
+
+## Process Phase
+
+### **Loading Libraries**
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(geosphere)
+library(ggmap)
+```
+
+This chunk of code is loading several libraries that are collections of R functions and datasets. **`tidyverse`** is a suite of packages designed for data science, **`lubridate`** makes it easier to work with dates and times, **`geosphere`** deals with geographic calculations, and **`ggmap`** is used for visualizing spatial data with Google Maps.
+
+### **Reading Data**
+
+```{r}
+CyclisticData202212 <- read_csv("kaggle/202212-divvy-tripdata.csv")
+CyclisticData202301 <- read_csv("kaggle/202301-divvy-tripdata.csv")
+CyclisticData202302 <- read_csv("kaggle/202302-divvy-tripdata.csv")
+CyclisticData202303 <- read_csv("kaggle/202303-divvy-tripdata.csv")
+CyclisticData202304 <- read_csv("kaggle/202304-divvy-tripdata.csv")
+CyclisticData202305 <- read_csv("kaggle/202305-divvy-tripdata.csv")
+CyclisticData202306 <- read_csv("kaggle/202306-divvy-tripdata.csv")
+CyclisticData202307 <- read_csv("kaggle/202307-divvy-tripdata.csv")
+CyclisticData202308 <- read_csv("kaggle/202308-divvy-tripdata.csv")
+CyclisticData202309 <- read_csv("kaggle/202309-divvy-tripdata.csv")
+CyclisticData202310 <- read_csv("kaggle/202310-divvy-tripdata.csv")
+CyclisticData202311 <- read_csv("kaggle/202311-divvy-tripdata.csv")
+```
+
+Here, you're reading in 12 months of bike trip data from CSV files into R and assigning each month's data to a separate variable. **`read_csv`** is a function from the **`readr`** package (part of **`tidyverse`**) that reads comma-separated values (CSV) files into R as data frames.
+
+### **Merging Data**
+
+```{r}
+CyclisticMerged <- rbind(CyclisticData202212, CyclisticData202301, CyclisticData202302, CyclisticData202303, CyclisticData202304, CyclisticData202305, CyclisticData202305, CyclisticData202306, CyclisticData202307, CyclisticData202308, CyclisticData202309, CyclisticData202310, CyclisticData202311)
+```
+
+The **`rbind`** function is used to combine the monthly data frames into one big data frame by stacking them vertically. You're creating a new data frame called **`CyclisticMerged`** that contains data from all months.
+
+### **Initial Data Inspection**
+
+```{r}
+head(CyclisticMerged)
+glimpse(CyclisticMerged)
+summary(CyclisticMerged)
+```
+
+These functions are used to get a quick look at the data. **`head`** shows the first few rows, **`glimpse`** gives a concise summary of the data frame, and **`summary`** provides a numerical summary for each column in the data frame.
+
+### **Cleaning Data**
+
+```{r}
+library(dplyr)
+CyclisticMergedNoDup <- CyclisticMerged %>% 
+distinct(ride_id, .keep_all = TRUE)
+
+print(paste("Removed", nrow(CyclisticMerged) - nrow(CyclisticMergedNoDup),
+            "duplicate rows corresponding to ride_id"))
+```
+
+This code removes duplicate rows based on the **`ride_id`** column. It's using the **`dplyr`** package (part of **`tidyverse`**) and a pipe operator (**`%>%`**) to apply the **`distinct`** function to **`CyclisticMerged`**. The **`.keep_all = TRUE`** argument keeps all other columns for the non-duplicated rows.
+
+### **Checking for Missing Values**
+
+```{r}
+print(paste("ride_id has", sum(is.na(CyclisticMergedNoDup$ride_id)), "missing values" ))
+```
+
+Here, **`is.na`** checks for missing values (**`NA`**) in the specified column, **`sum`** adds them up, and **`paste`** is used to combine text and the result into a single printable string.
+
+### **Transforming Data**
+
+```{r}
+CyclisticMergedNoDup$rideable_type <- as.factor(CyclisticMergedNoDup$rideable_type)
+class(CyclisticMergedNoDup$rideable_type)
+nlevels(CyclisticMergedNoDup$rideable_type)
+summary(CyclisticMergedNoDup$rideable_type)
+```
+
+This transforms the **`rideable_type`** column into a factor, which is R’s data type for categorical variables. Factors are used when data can take on a limited number of values.
+
+```{r}
+CyclisticMergedNoDup$rideable_type[CyclisticMergedNoDup$rideable_type == "docked_bike"] <- "classic_bike"
+
+summary(CyclisticMergedNoDup$rideable_type)
+```
+
+### **Calculating Ride Time**
+
+```{r}
+CyclisticMergedNoDup$ride_time_minutes <- (as.double(difftime(CyclisticMergedNoDup$ended_at, CyclisticMergedNoDup$started_at)))/60
+
+summary(CyclisticMergedNoDup$ride_time_minutes)
+```
+
+The **`difftime`** function calculates the difference between the **`ended_at`** and **`started_at`** times for each ride, converts it to double (numeric), and divides by 60 to get the ride time in minutes.
+
+### **Filtering Ride Time**
+
+```{r}
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>% 
+  filter(ride_time_minutes >=  1) %>%
+  filter(ride_time_minutes <= 180)
+
+summary(CyclisticMergedNoDup$ride_time_minutes)
+```
+
+This filters out rides that are less than 1 minute or more than 180 minutes, as they might be outliers or data errors.
+
+### **Parsing Date and Time**
+
+```{r}
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>% 
+  mutate(month = strftime(CyclisticMergedNoDup$started_at, "%B"),
+         weekday = strftime(CyclisticMergedNoDup$started_at, "%A"))
+        
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>% 
+  mutate(hour_started = floor_date(started_at, unit = "hour")) 
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>% 
+  mutate(hour_started = strftime(CyclisticMergedNoDup$hour_started,"%R"))
+
+head(CyclisticMergedNoDup)
+```
+
+The **`mutate`** function is creating new columns for month and weekday from the **`started_at`** timestamp. **`strftime`** formats the date and time into readable text.
+
+### Transformation
+
+```{r}
+CyclisticMergedNoDup$month <- as.factor(CyclisticMergedNoDup$month)                          
+CyclisticMergedNoDup$weekday <- as.factor(CyclisticMergedNoDup$weekday)                          
+CyclisticMergedNoDup$hour_started <- as.factor(CyclisticMergedNoDup$hour_started)
+
+class(CyclisticMergedNoDup$month)
+nlevels(CyclisticMergedNoDup$month)
+summary(CyclisticMergedNoDup$month)
+class(CyclisticMergedNoDup$weekday)
+nlevels(CyclisticMergedNoDup$weekday)
+summary(CyclisticMergedNoDup$weekday)
+class(CyclisticMergedNoDup$hour_started)
+nlevels(CyclisticMergedNoDup$hour_started)
+summary(CyclisticMergedNoDup$hour_started)
+```
+
+In this part of the code, I transformed several columns (**`month`**, **`weekday`**, **`hour_started`**) into factors. Factors are used in R for categorical data, making it easier to manage and analyze these types of variables. I then used **`class`**, **`nlevels`**, and **`summary`** to inspect these factors, checking their data types, the number of unique levels they contain, and providing a summary of their contents.
+
+### **Distance Calculation**
+
+```{r}
+CyclisticMergedNoDup$start_station_name <- as.factor(CyclisticMergedNoDup$start_station_name)                          
+CyclisticMergedNoDup$end_station_name <- as.factor(CyclisticMergedNoDup$end_station_name)                          
+CyclisticMergedNoDup$start_station_id <- as.factor(CyclisticMergedNoDup$start_station_id)                          
+CyclisticMergedNoDup$end_station_id <- as.factor(CyclisticMergedNoDup$end_station_id)
+
+class(CyclisticMergedNoDup$start_station_name)
+nlevels(CyclisticMergedNoDup$start_station_name)
+class(CyclisticMergedNoDup$end_station_name)
+nlevels(CyclisticMergedNoDup$end_station_name)
+class(CyclisticMergedNoDup$start_station_id)
+nlevels(CyclisticMergedNoDup$start_station_id)
+class(CyclisticMergedNoDup$end_station_id)
+nlevels(CyclisticMergedNoDup$end_station_id)
+```
+
+Here, I calculated the distance between the start and end stations of each ride. The **`distGeo`** function from the **`geosphere`** package computes the geographical distance using longitude and latitude coordinates. This calculated distance is stored in a new column **`distance_between_stations_km`**, represented in kilometers.
+
+```{r}
+CyclisticMergedNoDup$distance_between_stations_km <- 
+  distGeo(matrix(c(CyclisticMergedNoDup$start_lng,CyclisticMergedNoDup$start_lat), ncol = 2),
+          matrix(c(CyclisticMergedNoDup$end_lng,CyclisticMergedNoDup$end_lat), ncol = 2)) / 1000
+
+summary(CyclisticMergedNoDup$distance_between_stations_km)
+```
+
+### **Removing Outliers**
+
+```{r}
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>%
+  arrange(desc(distance_between_stations_km))
+
+head(CyclisticMergedNoDup$distance_between_stations_km, n = 10)
+```
+
+```{r}
+CyclisticMergedNoDup <- CyclisticMergedNoDup %>% 
+  slice(-(1:8))
+
+head(CyclisticMergedNoDup$distance_between_stations_km, n = 10)
+summary(CyclisticMergedNoDup$distance_between_stations_km)
+```
+
+I arranged the data in descending order based on the distances between stations using **`arrange`** and then removed the top 8 records, presuming them to be outliers. This was achieved using the **`slice`** function, which selects and removes specific rows from a data frame.
+
+### **Final Cleanup**
+
+```{r}
+CyclisticMergedNoDup$member_casual <- as.factor(CyclisticMergedNoDup$member_casual)     
+
+class(CyclisticMergedNoDup$member_casual)
+nlevels(CyclisticMergedNoDup$member_casual)
+summary(CyclisticMergedNoDup$member_casual)
+```
+
+In this section, I converted the **`member_casual`** column into a factor for better categorization and analysis. The **`class`**, **`nlevels`**, and **`summary`** functions helped me inspect the structure, count the number of unique categories, and get an overview of this column.
+
+### Checking for missing values
+
+```{r}
+summary(CyclisticMergedNoDup)
+
+print(paste("ride_id has", sum(is.na(CyclisticMergedNoDup$ride_id)), "missing values"))
+print(paste("rideable_type has", sum(is.na(CyclisticMergedNoDup$rideable_type)), "missing values"))
+print(paste("started_at has", sum(is.na(CyclisticMergedNoDup$started_at)), "missing values"))
+print(paste("ended_at has", sum(is.na(CyclisticMergedNoDup$ended_at)),"missing values"))
+print(paste("start_station_name has", sum(is.na(CyclisticMergedNoDup$start_station_name)),"missing values"))
+print(paste("start_station_id has", sum(is.na(CyclisticMergedNoDup$start_station_id)),"missing values"))
+print(paste("end_station_name has", sum(is.na(CyclisticMergedNoDup$end_station_name)),"missing values"))
+print(paste("end_station_id has", sum(is.na(CyclisticMergedNoDup$end_station_id)),"missing values"))
+print(paste("start_lat has", sum(is.na(CyclisticMergedNoDup$start_lat)),"missing values"))
+print(paste("start_lng has", sum(is.na(CyclisticMergedNoDup$start_lng)),"missing values"))
+print(paste("end_lat has", sum(is.na(CyclisticMergedNoDup$end_lat)),"missing values"))
+print(paste("end_lng has", sum(is.na(CyclisticMergedNoDup$end_lng)),"missing values"))
+print(paste("member_casual has", sum(is.na(CyclisticMergedNoDup$member_casual)),"missing values"))
+print(paste("ride_time_minutes has", sum(is.na(CyclisticMergedNoDup$ride_time_minutes)),"missing values"))
+print(paste("month has", sum(is.na(CyclisticMergedNoDup$month)),"missing values"))
+print(paste("weekday has", sum(is.na(CyclisticMergedNoDup$weekday)),"missing values"))
+print(paste("hour_started has", sum(is.na(CyclisticMergedNoDup$hour_started)),"missing values"))
+print(paste("distance_between_stations_km has", sum(is.na(CyclisticMergedNoDup$distance_between_stations_km)),"missing values"))
+```
+
+I summarized the entire data frame to identify missing values (**`NA`**) across all columns. This was done using **`summary`** and further detailed with **`print`** and **`paste`** functions to highlight the number of missing values in each column specifically.
+
+### **Subset of Missing Data**
+
+```{r}
+NAinSSN <- subset(CyclisticMergedNoDup, is.na(CyclisticMergedNoDup$start_station_name))
+NAinSSI <- subset(CyclisticMergedNoDup, is.na(CyclisticMergedNoDup$start_station_id))
+NAinESN <- subset(CyclisticMergedNoDup, is.na(CyclisticMergedNoDup$end_station_name))
+NAinESI <- subset(CyclisticMergedNoDup, is.na(CyclisticMergedNoDup$end_station_id))
+
+head(NAinSSN)
+head(NAinSSI)
+head(NAinESN)
+head(NAinESI)
+
+summary(NAinSSN$rideable_type)
+summary(NAinSSI$rideable_type)
+summary(NAinESN$rideable_type)
+summary(NAinESI$rideable_type)
+```
+
+I created subsets of the data where there were missing values in station-related columns, such as **`start_station_name`**, **`start_station_id`**, and others. This helped in understanding the nature and impact of missing data on the analysis.
+
+### **Creating a Cleaned Data Frame**
+
+```{r}
+CyclisticClean <- CyclisticMergedNoDup %>% 
+  select(-c(started_at, ended_at))
+
+head(CyclisticClean)
+summary(CyclisticClean)
+```
+
+Finally, I prepared a cleaned version of the data frame named **`CyclisticClean`** by selectively removing the **`started_at`** and **`ended_at`** columns. This step indicated that these columns were not necessary for the upcoming analysis phases.
+
+# ANALYZE
+
+#### User Type Summary
+
+This section creates a summary of the number of rides taken by each user type (casual and member), along with their percentages:
+
+```{r}
+member_casual_summary <- CyclisticClean %>% 
+  group_by(member_casual) %>% 
+  summarise(count = n(),  percentage = round(length(ride_id)/nrow(CyclisticClean)*100,2), 
+  .groups = "drop")
+
+options(scipen = 999, repr.plot.width = 11, repr.plot.height = 8)
+
+ggplot(member_casual_summary, aes(x = " " , y = count, fill = member_casual)) + 
+  geom_col() + labs(title = "Number of Rides Taken by User Type (Dec 2022 - Nov 2023)") + 
+  geom_text(aes(label = paste(count," --- ", percentage ,"%")), position = position_stack(vjust = 0.5), 
+  size = 6) + theme_void(base_size = 19) + scale_fill_discrete(name = "User Type") + coord_polar(theta = "y")
+```
+
+In this code, I use **`group_by`** to categorize the data by **`member_casual`**, and **`summarise`** to calculate the count and percentage of each group. **`n()`** counts the number of rows in each group, and **`length(ride_id)/nrow(CyclisticClean)*100`** computes the percentage.
+
+-   **`options(scipen = 999, repr.plot.width = 11, repr.plot.height = 8)`**: Sets global options for your R session. **`scipen`** is used to discourage scientific notation in numbers. **`repr.plot.width`** and **`repr.plot.height`** set the dimensions of plots in your R Markdown document.
+
+-   **`ggplot(...)`**: Initiates a ggplot graphic. The **`aes`** function inside **`ggplot`** sets the aesthetic mappings. Here, **`x`** is dummy (since we want a pie chart), **`y`** is the count of rides, and **`fill`** is set to differentiate between user types.
+
+-   **`geom_col()`**: Creates a bar plot. Since we're making a pie chart, these "bars" will be segments of the pie.
+
+-   **`labs(...)`**: Adds labels to the plot, like the title.
+
+-   **`geom_text(...)`**: Places text labels on the plot. It uses **`position_stack(vjust = 0.5)`** to center the labels in the pie segments.
+
+-   **`theme_void()`**: Applies a minimalistic theme, removing axes and most other elements.
+
+-   **`scale_fill_discrete(...)`**: Sets the color scale for discrete variables (here, user types).
+
+-   **`coord_polar(theta = "y")`**: Transforms the bar plot into a polar coordinate system, effectively turning it into a pie chart.
+
+### **Subsequent Sections**
+
+In the subsequent sections, similar principles apply:
+
+-   **`options(...)`**: Adjusts the global settings for plot dimensions.
+
+-   **`ggplot(data = ..., aes(x = ..., y = ..., ...))`**: Creates a plot with specified data and aesthetic mappings like x-axis, y-axis, color, fill, etc.
+
+-   **`geom_col(...)`**, **`geom_line(...)`**, **`geom_point(...)`**: Different geometric objects to represent data - bars for bar charts, lines for line charts, and points for scatter plots.
+
+-   **`labs(...)`**: Adds labels (titles, x-axis, y-axis) to the plot.
+
+-   **`scale_fill_discrete(...)`**, **`scale_color_discrete(...)`**: Sets the color scale for discrete variables.
+
+-   **`theme(...)`**, **`theme_gray(...)`**, etc.: Applies specific themes to the plot for better visual presentation.
+
+-   **`facet_wrap(...)`**: Creates a multi-panel plot, splitting the data into subsets based on a given factor.
+
+#### Monthly Ride Count by User Type
+
+The next code snippet analyzes the monthly ride count for each user type:
+
+```{r}
+CyclisticClean$month <- ordered(CyclisticClean$month, levels = c("December", "January", "February", "March", "April","May", "June", "July", "August", "September", "October", "November"))
+
+month_member_casual_summary <- CyclisticClean %>% 
+  group_by(month, member_casual) %>%
+  summarise(count = n(), .groups = "drop")%>%
+  arrange(month, member_casual)
+
+options(repr.plot.width = 16, repr.plot.height = 8)
+
+ggplot(data = month_member_casual_summary, aes(x = month, y = count, fill = member_casual),
+  show.legend = FALSE) + geom_col(position = "dodge", width = 0.6) +
+  labs(title = "Monthly Ride Count by User Type (Dec 2022 - Nov 2023)", x = "Month", y = "# of Rides") + 
+  scale_fill_discrete(name="User Type") + theme_gray(base_size = 19)
+```
+
+Here, I group the data by both **`month`** and **`member_casual`**, then summarize it by counting the number of entries (**`n()`**) in each group.
+
+### **Ride Count by Day of the Week**
+
+```{r}
+CyclisticClean$weekday <- ordered(CyclisticClean$weekday, levels = 
+                                    c("Monday", "Tuesday", "Wednesday", "Thursday", 
+                                      "Friday", "Saturday", "Sunday"))
+
+weekday_member_casual_summary <- CyclisticClean %>% 
+  group_by(weekday, member_casual) %>%
+  summarise(count = n(), .groups = "drop")%>%
+  arrange(weekday, member_casual)
+
+ggplot(data = weekday_member_casual_summary, aes(x = weekday, y = count, fill = member_casual),
+  show.legend = FALSE) + geom_col(position = "dodge", width = 0.8) +
+  labs(title = "Ride Count by Day of the Week (Dec 2022 - Nov 2023)", x = "Day", y = "# of Rides") + 
+  scale_fill_discrete(name="User Type") + theme_gray(base_size = 19) + geom_text(aes(label = count),
+  size = 5, vjust = -0.25, position = position_dodge(width = 0.8))
+```
+
+Similar to the previous code, but now grouping by **`weekday`** and **`member_casual`**. The count of rides for each day of the week is calculated.
+
+### **Ride Count by Time of Day on Weekdays and Weekends**
+
+```{r}
+hour_member_casual_summary <- CyclisticClean %>% 
+  filter(weekday == "Monday" | weekday == "Tuesday"| weekday == "Wednesday" |
+         weekday == "Thursday" |weekday == "Friday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(count = n(), .groups = "drop")%>%
+  arrange(hour_started, member_casual)
+
+ggplot(data = hour_member_casual_summary, aes(x = hour_started, y = count, group = member_casual, 
+  color = member_casual)) + geom_point() + geom_line() +
+  labs(title = "Ride Count by Time of Day on Weekdays (Dec 2022 - Nov 2023)", x = "Hour", y = "# of Rides") + 
+  guides(color = guide_legend(title = "User Type")) + 
+  theme(text = element_text(size = 19),axis.text.x = element_text(angle = 90))
+
+hour_member_casual_summary1 <- CyclisticClean %>% 
+  filter(weekday == "Saturday" | weekday == "Sunday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  arrange(hour_started, member_casual)
+
+ggplot(data = hour_member_casual_summary1, aes(x = hour_started, y = count, group = member_casual,
+  color = member_casual)) + geom_point() + geom_line() +
+  labs(title = "Ride Count by Time of Day on Weekends (Aug 2022 - July 2023)", x = "Hour",
+  y = "# of Rides") + guides(color = guide_legend(title = "User Type")) + 
+  theme(text = element_text(size = 19),axis.text.x = element_text(angle = 90))
+```
+
+This code filters the data for weekdays, groups it by hour and user type, and counts the number of rides. The **`filter`** function is used to select specific days.
+
+### **Mean Ride Time by User Type**
+
+```{r}
+ride_time_summary <- CyclisticClean %>%
+  group_by(member_casual) %>%
+  summarise(mean = round(mean(ride_time_minutes),1), median = round(median(ride_time_minutes),1), .groups = "drop")
+
+options(repr.plot.width = 10, repr.plot.height = 8)
+
+ggplot(data = ride_time_summary) + 
+  geom_col(mapping = aes(x = member_casual , y = mean, fill = member_casual), show.legend = FALSE) +
+  labs(title = "Mean Ride Time By User Type (Dec 2022 - Nov 2023)", x = "User Type", 
+  y = "Mean Ride Time (minutes)") + geom_text(aes(x = member_casual, y = mean, label = mean), 
+  vjust = -0.25, size = 5) + theme(text = element_text(size = 19))
+```
+
+Calculates the average (**`mean`**) and median ride time for different user types. **`round`** is used to round off the values.
+
+### **Mean Ride Time by Bike Type for Casual Users**
+
+Focusing on casual users, this code calculates the mean ride time each month for different bike types. It uses **`filter`** to select casual users and **`group_by`** to categorize by bike type and month.
+
+```{r}
+weekday_member_casual_summary3 <- CyclisticClean %>%
+  group_by(month, member_casual) %>%
+  summarise(mean = round(mean(ride_time_minutes),1), median = round(median(ride_time_minutes),1), .groups = "drop")
+
+options(repr.plot.width = 16, repr.plot.height = 8)
+
+ggplot(data = weekday_member_casual_summary3, aes(x = month , y = mean, fill = member_casual), show.legend = FALSE) + 
+  geom_col(position = "dodge", width = 0.7) + 
+  labs(title = "Mean Ride Time by Month (Dec 2022 - Nov 2023)", x = "Month",y = "Mean Ride Time (minutes)") + 
+  scale_fill_discrete(name="User Type") + theme_gray(base_size = 19) + geom_text(aes(label = mean),
+  size = 5, vjust = -0.25, position = position_dodge(width = 0.7))
+
+weekday_member_casual_summary2 <- CyclisticClean %>%
+  group_by(weekday, member_casual) %>%
+  summarise(mean = round(mean(ride_time_minutes),1), median = round(median(ride_time_minutes),1), .groups = "drop")
+
+ggplot(data = weekday_member_casual_summary2, aes(x = weekday , y = mean, fill = member_casual), 
+  show.legend = FALSE) + geom_col(position = "dodge", width = 0.8) + 
+  labs(title = "Mean Ride Time by Day of the Week (Dec 2022 - Nov 2023)", 
+  x = "Day",y = "Mean Ride Time (minutes)") + scale_fill_discrete(name="User Type") + 
+  theme_gray(base_size = 19) + geom_text(aes(label = mean), size = 5, vjust = -0.25, 
+  position = position_dodge(width = 0.8))
+
+ride_time_summary_week <- CyclisticClean %>%
+  filter(weekday == "Monday" | weekday == "Tuesday" | weekday == "Wednesday" |
+  weekday == "Thursday" | weekday == "Friday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(mean = round(mean(ride_time_minutes),1), median = round(median(ride_time_minutes),1), .groups = "drop")
+
+ride_time_summary_weekend <- CyclisticClean %>%
+  filter(weekday == "Saturday" | weekday == "Sunday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(mean = round(mean(ride_time_minutes),1), median = round(median(ride_time_minutes),1), .groups = "drop")
+
+ggplot(data = ride_time_summary_week, aes(x = hour_started , y = mean, group = member_casual, 
+  color = member_casual)) + geom_line() + geom_point() + 
+  labs(title = "Mean Ride Time by Time of Day (Weekdays, Dec 2022 - Nov 2023)",
+  x = "Hour", y = "Mean Ride Time (minutes)") + theme(axis.text.x = element_text(angle = 90), 
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "User Type")) + 
+  geom_text(aes(x = hour_started, y = mean, label = mean), vjust = -1, size = 4)
+
+ggplot(data = ride_time_summary_weekend, aes(x = hour_started , y = mean, group = member_casual,
+  color = member_casual)) + geom_line() +  geom_point() +
+  labs(title = "Mean Ride Time by Time of Day (Weekends, Dec 2022 - Nov 2023)", x = "Hour", 
+  y = "Mean Ride Time (minutes)") + theme(axis.text.x = element_text(angle = 90), 
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "User Type")) + 
+  geom_text(aes(x = hour_started, y = mean, label = mean), vjust = -1, size = 4)
+```
+
+```{r}
+CyclisticClean$rideable_type <- ordered(CyclisticClean$rideable_type, levels = 
+                                          c("electric_bike", "classic_bike"))
+
+rideable_type_summary <- CyclisticClean %>%
+  group_by(member_casual, rideable_type) %>%
+  summarise(count = n(), .groups = "drop") 
+
+options(repr.plot.width = 16, repr.plot.height = 8)
+
+ggplot(data = rideable_type_summary, aes(x = member_casual, y = count, fill = rideable_type)) + 
+  geom_col(position = "stack") + labs(title = "Ride Count by Bike Type (Dec 2022 - Nov 2023)", 
+  x = "User Type", y = "# of Rides") +  scale_fill_discrete(name="Bike Type") + 
+  theme_gray(base_size = 19) + coord_flip() + geom_text(aes(label = count), size = 5, 
+  position = position_stack(vjust = 0.5))
+```
+
+```{r}
+rideable_type_summary3 <- CyclisticClean %>%
+  filter(rideable_type == "electric_bike" | rideable_type == "classic_bike") %>%
+  group_by(month, rideable_type, member_casual) %>%
+  summarise(count = n(), .groups = "drop")
+
+options(repr.plot.width = 16, repr.plot.height = 16)
+
+ggplot(data = rideable_type_summary3, aes(x = month, y = count, fill = rideable_type)) +
+  geom_col(position = "stack") + 
+  labs(title = "Ride Count by Bike Type (Dec 2022 - Nov 2023)", x = "Bike Type", y = "# of Rides") +  
+  scale_fill_discrete(name = "Bike Type") + facet_wrap(~member_casual, nrow = 2) +
+  theme_gray(base_size = 19) + geom_text(aes(label = count), size = 4.5, position = position_stack(vjust = 0.9))
+
+rideable_type_summary2 <- CyclisticClean %>%
+  filter(rideable_type == "electric_bike" | rideable_type == "classic_bike") %>%
+  group_by(weekday, rideable_type, member_casual) %>%
+  summarise(count = n(), .groups = "drop")
+
+options(repr.plot.width = 16, repr.plot.height = 12)
+
+ggplot(data = rideable_type_summary2, aes(x = member_casual, y = count, fill = rideable_type)) +
+  geom_col(position = "stack") + labs(title = "Ride Count by Bike Type (Weeks, Dec 2022 - Nov 2023)", 
+  x = "User Type", y = "# of Rides") + scale_fill_discrete(name="Bike Type") +
+  facet_wrap(~weekday) + theme(axis.text.x = element_text(angle = 25)) +  coord_flip() + theme_gray(base_size = 19) + 
+  geom_text(aes(label = count), size = 5, position = position_stack(vjust = 0.5))
+
+rideable_type_summary_weekday <- CyclisticClean %>%
+  filter(weekday == "Monday" | weekday == "Tuesday"| weekday == "Wednesday" | weekday == "Thursday" |
+  weekday == "Friday") %>% 
+  group_by(hour_started, rideable_type, member_casual) %>%
+  summarise(count = n(), .groups = "drop")
+
+rideable_type_summary_weekend <- CyclisticClean %>%
+  filter(weekday == "Saturday" | weekday == "Sunday") %>% 
+  group_by(hour_started, rideable_type, member_casual) %>% 
+  summarise(count = n(), .groups = "drop")
+
+ggplot(data = rideable_type_summary_weekday, aes(x = hour_started, y = count, group = rideable_type, 
+  color = rideable_type)) + geom_line() + geom_point() +
+  labs(title = "Daily Ride Count by Bike Type (Weekdays, Dec 2022 - Nov 2023)", x = "Time of Day",
+  y = "# of Rides") + scale_fill_discrete(name="Bike Type") + facet_wrap(~member_casual, nrow = 2) +
+  theme(axis.text.x = element_text(angle = 90), text = element_text(size = 19)) + 
+  guides(color = guide_legend(title = "Bike Type")) 
+
+ggplot(data = rideable_type_summary_weekend, aes(x = hour_started, y = count, group = rideable_type, 
+                                                 color = rideable_type)) + geom_line() + geom_point() + 
+  labs(title = "Daily Ride Count by Bike Type (Weekends, Dec 2022 - Nov 2023)", x = "Time of Day", 
+  y = "# of Rides") + scale_fill_discrete(name="Bike Type") + facet_wrap(~member_casual, nrow = 2) +
+  theme(axis.text.x = element_text(angle = 90), text = element_text(size = 19)) + 
+  guides(color = guide_legend(title = "Bike Type"))
+```
+
+```{r}
+rideable_type_summary5 <- CyclisticClean %>% 
+  group_by(rideable_type, member_casual) %>% 
+  summarise(mean = round(mean(ride_time_minutes),2), .groups = "drop")
+
+options(repr.plot.width = 10, repr.plot.height = 8)
+
+ggplot(data = rideable_type_summary5, aes(x = rideable_type, y = mean, fill = rideable_type)) +
+  geom_col() + labs(title = "Mean Ride Time by Bike Type (Aug 2022 - Jul 2023)", x = "Bike Type",
+  y = "Ride Time (minutes)") + facet_wrap(~member_casual) + geom_text(aes(x = rideable_type,
+  y = mean, label = mean), vjust = -0.25) + theme(legend.position = "none", text = element_text(size = 19))
+```
+
+```{r}
+ridetime_summary_biketype1 <- CyclisticClean %>%  
+  filter(member_casual == "casual") %>% 
+  group_by(rideable_type, month) %>% 
+  summarise(mean = round(mean(ride_time_minutes),1), .groups = "drop")
+
+options(repr.plot.width = 16, repr.plot.height = 8)
+
+ggplot(data = ridetime_summary_biketype1, aes(x = month , y = mean, fill = rideable_type), 
+  show.legend = FALSE) + geom_col(position = "dodge", width = 0.7) + 
+  labs(title = "Mean Ride Time by Bike Type for Casual Users (Dec 2022 - Nov 2023)", x = "Month",
+  y = "Mean Ride Time (minutes)") + scale_fill_discrete(name="Bike Type") + theme_gray(base_size = 19) + 
+  geom_text(aes(label = mean), size = 5, vjust = -0.25, position = position_dodge(width = 0.7))
+
+ridetime_summary_biketype2 <- CyclisticClean %>%  
+  filter(member_casual == "casual") %>%
+  filter(weekday == "Saturday" | weekday == "Sunday") %>%
+  group_by(rideable_type, hour_started) %>% 
+  summarise(mean = mean(ride_time_minutes), .groups = "drop")
+
+ridetime_summary_biketype3 <- CyclisticClean %>%  
+  filter(member_casual == "casual") %>%
+  filter(!weekday == "Saturday" | !weekday == "Sunday") %>%
+  group_by(rideable_type, hour_started) %>% 
+  summarise(mean = mean(ride_time_minutes), .groups = "drop")
+
+ggplot(data = ridetime_summary_biketype2, aes(x = hour_started, y = mean, group = rideable_type, 
+  color = rideable_type)) + geom_line() + geom_point() +
+  labs(title = "Mean Ride Time by Bike Type for Casual Users (Weekends, Dec 2022 - Nov 2023)", x = "Hour", 
+  y = "Ride Time (minutes)") + theme(axis.text.x = element_text(angle = 90), 
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "Bike Type"))
+
+ggplot(data = ridetime_summary_biketype3, aes(x = hour_started, y = mean, group = rideable_type, 
+  color = rideable_type)) + geom_line() + geom_point() + 
+  labs(title = "Mean Ride Time by Bike Type for Casual Users (Weekends, Dec 2022 - Nov 2023)", x = "Hour", 
+  y = "Ride Time (minutes)") + theme(axis.text.x = element_text(angle = 90), 
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "Bike Type"))
+```
+
+```{r}
+ride_time_summary_casual <- CyclisticClean %>%
+filter(rideable_type == "electric_bike") %>%
+filter(weekday == "Saturday" | weekday == "Sunday")
+
+summary(ride_time_summary_casual$ride_time_minutes)
+```
+
+### **Distance Between Stations**
+
+Removes rows with **`NA`** in the **`distance_between_stations_km`** column using **`drop_na`**.
+
+### **Round Trips Analysis**
+
+Filters for rides where the start and end points are the same, indicating round trips.
+
+```{r}
+distance_summary <- CyclisticClean %>% 
+  drop_na(distance_between_stations_km) 
+
+distance0 <- distance_summary %>% 
+  filter(distance_between_stations_km == 0) %>% 
+  filter(rideable_type == "classic_bike")
+
+dist0_summary <- distance0 %>%  
+  group_by(member_casual) %>% 
+  summarise(count = n(), percentage = round(length(ride_id)/nrow(distance0)*100,2), .groups = "drop")
+
+options(repr.plot.width = 10, repr.plot.height = 8)
+
+ggplot(dist0_summary, aes(x= " ", y = count, fill = member_casual)) +
+  geom_col() + coord_polar(theta = "y") + theme_void(base_size = 19) +
+  geom_text(aes(label = paste(count, " --- ", percentage,"%")),
+  position = position_stack(vjust = 0.5), size = 6) + 
+  labs(title ="Count of Round Trips for Classic Bikes by User Type", 
+  subtitle = "Dec 2022 - Nov 2023") + scale_fill_discrete(name = "User Type") 
+
+distance0casual <- distance0 %>% 
+  filter(member_casual == "casual")
+
+summary(distance0$ride_time_minutes)
+summary(distance0casual$ride_time_minutes)
+```
+
+### **Mean Distance Analysis**
+
+Groups data by bike type and user type, then calculates the mean distance traveled.
+
+```{r}
+distance0_2 <- distance0 %>%  
+  group_by(month, member_casual) %>% 
+  summarise(mean = mean(ride_time_minutes), count = n(), 
+  percentage = round(length(ride_id)/nrow(distance0)*100,2), .groups = "drop")
+
+options(repr.plot.width = 16, repr.plot.height = 8)
+
+ggplot(data = distance0_2, aes(x = month, y = count, group = member_casual, color = member_casual)) +
+  geom_line() + geom_point() +
+  labs(title = "Count of Round Trips for Classic Bikes by Month (Dec 2022 - Nov 2023)", x = "Month",
+  y = "# of Rides") + theme(axis.text.x = element_text(angle = 25), text = element_text(size = 19)) + 
+  guides(color = guide_legend(title = "User Type")) + geom_text(aes(x = month, y = count, label = count),
+  size = 4.5, vjust = -0.35)
+
+distance0_1 <- distance0 %>% 
+  group_by(weekday, member_casual) %>% 
+  summarise(mean = mean(ride_time_minutes), count = n(), percentage = round(length(ride_id)/nrow(distance0)*100,2),
+            .groups = "drop")
+
+ggplot(data = distance0_1, aes(x = weekday, y = count, fill = member_casual)) +
+  geom_col(position = "dodge", width = 0.8) + scale_fill_discrete(name="User Type") +
+  labs(title = "Count of Round Trips for Classic Bikes by Weekday Dec 2022 - Nov 2023", x = "Day of Week",
+  y = "# of Rides") + theme_gray(base_size = 19) + geom_text(aes(x = weekday, y = count, label = count),
+  size = 5, position = position_dodge(width = 0.8), vjust = -0.25) 
+
+distance0_3 <- distance0 %>% 
+  filter(weekday == "Monday" | weekday == "Tuesday" | weekday == "Wednesday" | weekday == "Thursday" |
+  weekday == "Friday") %>% 
+  group_by(hour_started, member_casual) %>% 
+  summarise(mean = mean(ride_time_minutes), count = n(), .groups = "drop")
+
+distance0_4 <- distance0 %>% 
+  filter(weekday == "Saturday" | weekday == "Sunday") %>% 
+  group_by(hour_started, member_casual) %>% 
+  summarise(mean = mean(ride_time_minutes), count = n(), .groups = "drop")
+
+ggplot(data = distance0_3, aes(x = hour_started, y = count, group = member_casual, color = member_casual)) + 
+  geom_line() + geom_point() +
+  labs(title = "Count of Round Trips for Classic Bikes by Time of Day (Weekdays, Dec 2022 - Nov 2023)", 
+  x = "Time of Day", y = "# of Rides") + theme(axis.text.x = element_text(angle = 90),
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "User Type"))
+
+ggplot(data = distance0_4, aes(x = hour_started, y = count, group = member_casual, color = member_casual)) + 
+  geom_line() + geom_point() +
+  labs(title = "Count of Round Trip Rides for Classic Bikes by Time of Day (Weekends, Dec 2022 - Nov 2023)",
+  x = "Time of Day", y = "# of Rides") + theme(axis.text.x = element_text(angle = 90), 
+  text = element_text(size = 19)) + guides(color = guide_legend(title = "User Type"))
+```
+
+```{r}
+distance_summary_casual <- distance_summary %>% 
+  filter(member_casual =="casual")
+
+distance_summary_member <- distance_summary %>% 
+  filter(member_casual =="member")
+
+print(paste("distance_between_stations_km - CASUAL:"))
+summary(distance_summary_casual$distance_between_stations_km)
+print(paste("distance_between_stations_km - MEMBER:"))
+summary(distance_summary_member$distance_between_stations_km)
+```
+
+```{r}
+distance_summary_biketype <- distance_summary %>% 
+  group_by(rideable_type, member_casual) %>% 
+  summarise(mean = round(mean(distance_between_stations_km),2), .groups = "drop")
+
+ggplot(data = distance_summary_biketype, aes(x= rideable_type, y = mean, fill = rideable_type)) + 
+  geom_col() + facet_wrap(~member_casual) +  
+  geom_text(aes(x = rideable_type, y = mean, label = mean), vjust = -0.25, size = 5) +
+  theme(legend.position = "none", text = element_text(size = 19)) + 
+  labs(title = "Mean Distance Between Start and End Point (Dec 2022 - Nov 2023)", x = "Bike Type", 
+  y = "Distance Between Start/End Point (km)") 
+
+distance_summary_weekday <- distance_summary %>% 
+  filter(weekday == "Monday" | weekday == "Tuesday"| weekday == "Wednesday" |
+  weekday == "Thursday" |weekday == "Friday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(mean = round(mean(distance_between_stations_km),2), .groups = "drop")
+
+distance_summary_weekends <- distance_summary %>% 
+  filter(weekday == "Saturday" | weekday == "Sunday") %>% 
+  group_by(hour_started, member_casual) %>%
+  summarise(mean = round(mean(distance_between_stations_km),2), .groups = "drop")
+
+ggplot(data = distance_summary_weekday, aes(x= hour_started, y = mean, group = member_casual, 
+                                            color = member_casual)) + geom_line() + geom_point() + 
+  labs(title = "Mean Distance Between Start and End Point (Weekdays, Dec 2022 - Nov 2023)",
+  x = "Time of Day", y = "Distance Between Start/End Point (km)") +
+  theme(axis.text.x = element_text(angle = 90), text = element_text(size = 19)) + ylim(1.5,3) +
+  guides(color = guide_legend(title = "User Type"))
+
+ggplot(data = distance_summary_weekends, aes(x= hour_started, y = mean, group = member_casual, 
+                                             color = member_casual)) + geom_line() + geom_point() + theme_gray(base_size = 19) + 
+  labs(title = "Mean Distance Between Start and End Point (Weekends, Dec 2022 - Nov 2023)",
+  x = "Time of Day", y = "Distance Between Start/End Point (km)") +
+  theme(axis.text.x = element_text(angle = 90), text = element_text(size = 19)) + ylim(1.5,3) +
+  guides(color = guide_legend(title = "User Type"))
+```
+
+### **Route Analysis for Round Trips and Regular Trip**
+
+This code segment analyzes routes for round trips, grouping by coordinates and user type, then counting the number of trips.
+
+```{r}
+route_summary_dist0 <- distance0 %>% 
+  group_by(start_lng, start_lat, end_lng, end_lat, member_casual) %>%
+  summarise(total = n(),.groups="drop") %>%
+  filter(total>100) %>% 
+  arrange(desc(total))
+
+route_summary <- distance_summary %>% 
+  filter(!distance_between_stations_km == 0) %>% 
+  group_by(start_lng, start_lat, end_lng, end_lat, member_casual) %>%
+  summarise(total = n(),.groups="drop") %>%
+  filter(total>200) %>% 
+  arrange(desc(total))
+```
+
+### Reviewing Functions Used
+
+### **`ggplot` and Associated Functions**
+
+-   **`geom_text(...)`**: Adds text directly to the plot. It often includes **`aes(label = ...)`**, positioning, and size settings.
+
+-   **`coord_polar(...)`**: Transforms a plot into polar coordinates, often used for pie charts.
+
+-   **`theme_void(...)`**, **`theme_gray(...)`**, **`theme(...)`**: Various themes to style the plot. **`theme_void()`** removes most elements for a clean look, **`theme_gray()`** provides a classic gray background, and **`theme(...)`** allows for specific customizations.
+
+-   **`facet_wrap(...)`**: Creates multiple plots (facets) based on a grouping variable.
+
+-   **`scale_fill_discrete(...)`**, **`scale_color_discrete(...)`**: Set color scales for discrete variables in the plot.
+
+-   **`guides(...)`**: Customize the legend and other guides on the plot.
+
+-   **`geom_col(...)`**: Creates bar charts.
+
+-   **`geom_line(...)`**, **`geom_point(...)`**: Draw line and point plots, respectively.
+
+-   **`labs(...)`**: Add labels like titles, x-axis, and y-axis labels.
+
+### **`dplyr` Functions**
+
+-   **`group_by(...)`**: Groups data by one or more variables.
+
+-   **`summarise(...)`**, **`summarize(...)`**: Creates summary statistics for grouped data.
+
+-   **`arrange(...)`**: Sorts the data.
+
+-   **`filter(...)`**: Filters rows of data based on conditions.
+
+-   **`mutate(...)`**: Adds new variables or transforms existing ones.
+
+-   **`select(...)`**: Selects variables from a dataset.
+
+### **Other Functions**
+
+-   **`options(...)`**: Sets global options in R (e.g., plot dimensions).
+
+-   **`ordered(...)`**: Converts a factor to an ordered factor (useful for plotting ordered categories).
+
+-   **`geom_bar(...)`**: Another function for creating bar charts, similar to **`geom_col()`**.
+
+-   **`nlevels(...)`**: Gets the number of levels in a factor.
+
+-   **`as.factor(...)`**: Converts a variable to a factor.
+
+-   **`slice(...)`**: Selects rows by position.
+
+-   **`distinct(...)`**: Removes duplicate rows.
